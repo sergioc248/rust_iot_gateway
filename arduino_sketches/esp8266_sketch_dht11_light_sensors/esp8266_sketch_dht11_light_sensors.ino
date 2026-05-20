@@ -5,7 +5,7 @@
 #include <DHT.h>
 #define WIFI_SSID "FAMILIA_CUADROS"
 #define WIFI_PASSWORD "Yeyo*0207"
-#define API_URL "http://your-api-endpoint.com:3000/devices/esp8266-node-01/ingest"
+#define API_URL "https://rust-iot-gateway-fragrant-harborbird-9015.fly.dev/devices/esp8266-node-01/ingest"
 #define API_KEY "YOUR_API_KEY"
 #define DEVICE_ID "esp8266-node-01"
 #define DHTPIN 14
