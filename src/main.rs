@@ -22,6 +22,14 @@ struct HealthResponse {
     status: &'static str,
 }
 
+#[derive(Debug, Serialize)]
+struct RootResponse {
+    service: &'static str,
+    description: &'static str,
+    health_endpoint: &'static str,
+    ingest_endpoint: &'static str,
+}
+
 #[derive(Debug, Deserialize)]
 struct IngestRequest {
     timestamp: Option<DateTime<Utc>>,
@@ -66,6 +74,7 @@ async fn main() {
         .expect("connect postgres");
 
     let app = Router::new()
+        .route("/", get(root))
         .route("/health", get(health))
         .route("/devices/{device_id}/ingest", post(ingest))
         .with_state(AppState { db });
@@ -86,6 +95,15 @@ async fn main() {
 
 async fn health() -> Json<HealthResponse> {
     Json(HealthResponse { status: "ok" })
+}
+
+async fn root() -> Json<RootResponse> {
+    Json(RootResponse {
+        service: "rust_iot_gateway",
+        description: "Accepts IoT device ingestion payloads and stores them in Postgres.",
+        health_endpoint: "/health",
+        ingest_endpoint: "/devices/{device_id}/ingest",
+    })
 }
 
 async fn ingest(
