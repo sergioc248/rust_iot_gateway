@@ -1,0 +1,134 @@
+x-simulator-base: &simulator-base
+  build:
+    context: .
+    dockerfile: Dockerfile.simulator
+  image: telemetry-simulator:latest
+  restart: unless-stopped
+  mem_limit: 128m
+  cpus: 0.25
+  environment:
+    GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+    INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+    REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+    RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+
+services:
+  sim-logistica-01:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-logistica-01
+      PRESET: logistica
+
+  sim-logistica-02:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-logistica-02
+      PRESET: logistica
+
+  sim-clima-externo-01:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-clima-externo-01
+      PRESET: clima_externo
+
+  sim-clima-externo-02:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-clima-externo-02
+      PRESET: clima_externo
+
+  sim-energia-01:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-energia-01
+      PRESET: energia
+
+  sim-energia-02:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-energia-02
+      PRESET: energia
+
+  sim-cultivo-cacao-01:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-cultivo-cacao-01
+      PRESET: cultivo_cacao
+      GRID_FILA: "1"
+      GRID_COL: "1"
+
+  sim-cultivo-cacao-02:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-cultivo-cacao-02
+      PRESET: cultivo_cacao
+      GRID_FILA: "1"
+      GRID_COL: "2"
+
+  sim-cultivo-cacao-03:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-cultivo-cacao-03
+      PRESET: cultivo_cacao
+      GRID_FILA: "1"
+      GRID_COL: "3"
+
+  sim-cultivo-cacao-04:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-cultivo-cacao-04
+      PRESET: cultivo_cacao
+      GRID_FILA: "2"
+      GRID_COL: "1"
+
+  sim-cultivo-cacao-05:
+    <<: *simulator-base
+    environment:
+      GATEWAY_URL: ${GATEWAY_URL:?GATEWAY_URL must be set}
+      INTERVAL_SECONDS: ${INTERVAL_SECONDS:-60}
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10}
+      RUST_LOG: ${SIMULATOR_RUST_LOG:-telemetry_simulator=info}
+      DEVICE_ID: nodo-cultivo-cacao-05
+      PRESET: cultivo_cacao
+      GRID_FILA: "2"
+      GRID_COL: "2"

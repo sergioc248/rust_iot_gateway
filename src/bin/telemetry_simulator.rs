@@ -13,6 +13,7 @@ enum Preset {
     ClimaExterno,
     Energia,
     Calefaccion,
+    CultivoCacao,
 }
 
 #[derive(Debug)]
@@ -20,6 +21,7 @@ struct Config {
     ingest_url: String,
     device_id: String,
     preset: Preset,
+    crop_grid: Option<(i64, i64)>,
     interval: Duration,
     timeout: Duration,
 }
@@ -55,7 +57,7 @@ async fn main() -> AppResult<()> {
     loop {
         let request = TelemetryRequest {
             timestamp: Utc::now(),
-            payload: config.preset.generate_payload(),
+            payload: config.preset.generate_payload(config.crop_grid),
         };
 
         let payload_log =
@@ -88,8 +90,16 @@ impl Config {
             .parse()?;
         let device_id =
             env::var("DEVICE_ID").unwrap_or_else(|_| format!("simulated-{}", preset.as_str()));
+        let grid_fila = parse_optional_env_i64("GRID_FILA")?;
+        let grid_col = parse_optional_env_i64("GRID_COL")?;
         let interval = Duration::from_secs(parse_env_u64("INTERVAL_SECONDS", 60)?);
         let timeout = Duration::from_secs(parse_env_u64("REQUEST_TIMEOUT_SECONDS", 10)?);
+
+        if (grid_fila.is_some() && grid_col.is_none())
+            || (grid_fila.is_none() && grid_col.is_some())
+        {
+            return Err(invalid_input("GRID_FILA and GRID_COL must be set together"));
+        }
 
         if interval.is_zero() {
             return Err(invalid_input("INTERVAL_SECONDS must be greater than 0"));
@@ -103,6 +113,7 @@ impl Config {
             ingest_url: ingest_url(&gateway_url, &device_id),
             device_id,
             preset,
+            crop_grid: grid_fila.zip(grid_col),
             interval,
             timeout,
         })
@@ -116,10 +127,11 @@ impl Preset {
             Self::ClimaExterno => "clima_externo",
             Self::Energia => "energia",
             Self::Calefaccion => "calefaccion",
+            Self::CultivoCacao => "cultivo_cacao",
         }
     }
 
-    fn generate_payload(self) -> Map<String, Value> {
+    fn generate_payload(self, crop_grid: Option<(i64, i64)>) -> Map<String, Value> {
         let mut rng = rand::thread_rng();
 
         match self {
@@ -182,6 +194,28 @@ impl Preset {
                     json!(round1(rng.gen_range(0.0..=100.0))),
                 ),
             ]),
+            Self::CultivoCacao => {
+                let (grid_fila, grid_col) =
+                    crop_grid.unwrap_or_else(|| (rng.gen_range(1..=5), rng.gen_range(1..=5)));
+
+                Map::from_iter([
+                    (
+                        "tempC".to_owned(),
+                        json!(round1(rng.gen_range(-40.0..=80.0))),
+                    ),
+                    (
+                        "humedadAirePct".to_owned(),
+                        json!(round1(rng.gen_range(0.0..=100.0))),
+                    ),
+                    (
+                        "bateriaPct".to_owned(),
+                        json!(round1(rng.gen_range(0.0..=100.0))),
+                    ),
+                    ("rssiDbm".to_owned(), json!(rng.gen_range(-90..=-30))),
+                    ("gridFila".to_owned(), json!(grid_fila)),
+                    ("gridCol".to_owned(), json!(grid_col)),
+                ])
+            }
         }
     }
 }
@@ -195,9 +229,12 @@ impl std::str::FromStr for Preset {
             "clima_externo" | "clima-externo" | "weather" => Ok(Self::ClimaExterno),
             "energia" | "energy" => Ok(Self::Energia),
             "calefaccion" | "heating" => Ok(Self::Calefaccion),
+            "cultivo_cacao" | "cultivo-cacao" | "cacao" | "crop" | "crops" => {
+                Ok(Self::CultivoCacao)
+            }
             _ => Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "PRESET must be one of: logistica, clima_externo, energia, calefaccion",
+                "PRESET must be one of: logistica, clima_externo, energia, calefaccion, cultivo_cacao",
             )),
         }
     }
@@ -260,6 +297,16 @@ fn parse_env_u64(name: &str, default: u64) -> AppResult<u64> {
             .parse()
             .map_err(|_| invalid_input(&format!("{name} must be a positive integer"))),
         Err(_) => Ok(default),
+    }
+}
+
+fn parse_optional_env_i64(name: &str) -> AppResult<Option<i64>> {
+    match env::var(name) {
+        Ok(value) => value
+            .parse()
+            .map(Some)
+            .map_err(|_| invalid_input(&format!("{name} must be an integer"))),
+        Err(_) => Ok(None),
     }
 }
 

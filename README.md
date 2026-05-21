@@ -44,7 +44,12 @@ PRESET=logistica
 INTERVAL_SECONDS=60
 REQUEST_TIMEOUT_SECONDS=10
 RUST_LOG=telemetry_simulator=info
+GRID_FILA=1
+GRID_COL=1
 ```
+
+Supported presets are `logistica`, `clima_externo`, `energia`, `calefaccion`, and `cultivo_cacao`.
+`GRID_FILA` and `GRID_COL` are optional and intended for `cultivo_cacao` nodes with fixed grid coordinates.
 
 `GATEWAY_URL` can be either the gateway base URL or a full ingest URL containing `{device_id}`:
 
@@ -83,6 +88,42 @@ docker run -d --name sim-logistica-01 -e GATEWAY_URL=https://example.com -e DEVI
 docker run -d --name sim-clima-01 -e GATEWAY_URL=https://example.com -e DEVICE_ID=nodo-clima-externo-01 -e PRESET=clima_externo telemetry-simulator
 docker run -d --name sim-energia-01 -e GATEWAY_URL=https://example.com -e DEVICE_ID=nodo-energia-01 -e PRESET=energia telemetry-simulator
 docker run -d --name sim-calefaccion-01 -e GATEWAY_URL=https://example.com -e DEVICE_ID=nodo-calefaccion-01 -e PRESET=calefaccion telemetry-simulator
+docker run -d --name sim-cultivo-cacao-01 -e GATEWAY_URL=https://example.com -e DEVICE_ID=nodo-cultivo-cacao-01 -e PRESET=cultivo_cacao telemetry-simulator
+```
+
+## VPS Simulator Fleet
+
+Use `compose.simulators.yml` to run the unattended simulator fleet on one VPS. It starts 11 containers:
+
+| Count | Preset | Device IDs |
+| --- | --- | --- |
+| 2 | `logistica` | `nodo-logistica-01` to `nodo-logistica-02` |
+| 2 | `clima_externo` | `nodo-clima-externo-01` to `nodo-clima-externo-02` |
+| 2 | `energia` | `nodo-energia-01` to `nodo-energia-02` |
+| 5 | `cultivo_cacao` | `nodo-cultivo-cacao-01` to `nodo-cultivo-cacao-05` |
+
+Create a VPS `.env` next to the compose file:
+
+```bash
+GATEWAY_URL=https://your-gateway.example.com
+INTERVAL_SECONDS=60
+REQUEST_TIMEOUT_SECONDS=10
+SIMULATOR_RUST_LOG=telemetry_simulator=info
+```
+
+Start or update the fleet:
+
+```bash
+docker compose -f compose.simulators.yml up -d --build
+```
+
+Docker Compose uses `restart: unless-stopped`, so containers restart after crashes and host reboots unless you explicitly stop them.
+
+Check status and logs:
+
+```bash
+docker compose -f compose.simulators.yml ps
+docker compose -f compose.simulators.yml logs -f
 ```
 
 ## Simulator Presets
@@ -180,3 +221,31 @@ Ranges:
 | `tempSalidaC` | 20.0 to 75.0 C |
 | `potenciaW` | 0.0 to 1500.0 W |
 | `velVentiladorPct` | 0.0 to 100.0% |
+
+### `cultivo_cacao`
+
+For `Nodo Cultivo de Cacao` and other crop base nodes.
+
+Payload fields:
+
+```json
+{
+  "tempC": 25.7,
+  "humedadAirePct": 82.4,
+  "bateriaPct": 76.2,
+  "rssiDbm": -64,
+  "gridFila": 2,
+  "gridCol": 4
+}
+```
+
+Ranges:
+
+| Field | Range |
+| --- | --- |
+| `tempC` | -40.0 to 80.0 C |
+| `humedadAirePct` | 0.0 to 100.0% |
+| `bateriaPct` | 0.0 to 100.0% |
+| `rssiDbm` | -90 to -30 dBm |
+| `gridFila` | 1 to 5 |
+| `gridCol` | 1 to 5 |
